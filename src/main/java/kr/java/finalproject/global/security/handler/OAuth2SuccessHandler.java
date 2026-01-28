@@ -1,0 +1,55 @@
+package kr.java.finalproject.global.security.handler;
+
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import kr.java.finalproject.domain.auth.entity.RefreshToken;
+import kr.java.finalproject.domain.auth.repository.RefreshTokenRepository;
+import kr.java.finalproject.global.security.details.CustomUserDetails;
+import kr.java.finalproject.global.security.jwt.JwtProvider;
+import kr.java.finalproject.global.security.oauth.CustomOAuth2User;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseCookie;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
+import org.springframework.stereotype.Component;
+import org.springframework.web.util.UriComponentsBuilder;
+
+import java.io.IOException;
+
+@Component
+@RequiredArgsConstructor
+public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
+
+    private final JwtProvider jwtProvider;
+    private final RefreshTokenRepository refreshTokenRepository;
+
+    @Override
+    public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
+                                        Authentication authentication) throws IOException {
+
+        CustomOAuth2User principal =
+                (CustomOAuth2User) authentication.getPrincipal();
+
+        Long userId = principal.getUserId();
+
+        String accessToken = jwtProvider.createAccessToken(authentication, userId);
+        String refreshToken = jwtProvider.createRefreshToken(authentication, userId);
+
+        refreshTokenRepository.save(new RefreshToken(userId, refreshToken));
+
+        ResponseCookie cookie = ResponseCookie.from("refresh_token", refreshToken)
+                .httpOnly(true)
+                .secure(false)
+                .path("/")
+                .maxAge(7 * 24 * 60 * 60)
+                .build();
+        response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
+
+        String targetUrl = UriComponentsBuilder.fromUriString("http://localhost:3000/oauth/redirect")
+                .fragment("accessToken=" + accessToken)
+                .build().toUriString();
+
+        getRedirectStrategy().sendRedirect(request, response, targetUrl);
+    }
+}
