@@ -1,8 +1,11 @@
 package kr.java.finalproject.domain.user.entity;
 
 import jakarta.persistence.*;
+import kr.java.finalproject.domain.auth.entity.SocialAccount;
 import lombok.*;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @Entity
@@ -20,6 +23,9 @@ public class User {
 
     @Column(nullable = false, unique = true, updatable = false)
     private UUID publicId;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    private List<SocialAccount> socialAccounts = new ArrayList<>();
 
     @PrePersist
     public void generatePublicId() {

@@ -1,5 +1,7 @@
 package kr.java.finalproject.global.security.oauth;
 
+import kr.java.finalproject.domain.auth.entity.SocialAccount;
+import kr.java.finalproject.domain.auth.repository.SocialAccountRepository;
 import kr.java.finalproject.domain.user.entity.User;
 import kr.java.finalproject.domain.user.repository.UserRepository;
 import kr.java.finalproject.global.security.oauth.dto.GoogleUserInfo;
@@ -11,6 +13,7 @@ import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
 import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -18,8 +21,10 @@ public class CustomOAuth2UserService
         extends DefaultOAuth2UserService {
 
     private final UserRepository userRepository;
+    private final SocialAccountRepository socialAccountRepository;
 
     @Override
+    @Transactional
     public OAuth2User loadUser(OAuth2UserRequest userRequest)
             throws OAuth2AuthenticationException {
 
@@ -34,8 +39,15 @@ public class CustomOAuth2UserService
 
         String email = userInfo.getEmail();
 
-        User user = userRepository.findByEmail(email)
-                .orElseGet(() -> userRepository.save(new User(email)));
+        User user = socialAccountRepository.findByProviderAndProviderId(registrationId, userInfo.getProviderId())
+                .map(SocialAccount::getUser)
+                .orElseGet(() -> {
+                    User existingUser = userRepository.findByEmail(email)
+                            .orElseGet(() -> userRepository.save(new User(email)));
+
+                    socialAccountRepository.save(new SocialAccount(registrationId, userInfo.getProviderId(), existingUser));
+                    return existingUser;
+                });
 
         return new CustomOAuth2User(user, oauth2User.getAttributes());
     }

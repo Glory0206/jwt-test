@@ -12,9 +12,9 @@ import java.util.Map;
 @Getter
 public class CustomOAuth2User implements OAuth2User {
 
-    private final Long userId;                    // ⭐ 우리 시스템 기준
+    private final Long userId;
     private final String email;
-    private final Map<String, Object> attributes; // OAuth 제공 데이터
+    private final Map<String, Object> attributes;
 
     public CustomOAuth2User(User user,
                             Map<String, Object> attributes) {
@@ -28,13 +28,11 @@ public class CustomOAuth2User implements OAuth2User {
         return attributes;
     }
 
-    // 지금은 Role 안 쓰니까 빈 컬렉션
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return List.of();
     }
 
-    // Spring Security가 식별자로 쓰는 값
     @Override
     public String getName() {
         return userId.toString();

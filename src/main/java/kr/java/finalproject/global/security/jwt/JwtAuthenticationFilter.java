@@ -28,7 +28,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         if (StringUtils.hasText(jwt) && jwtProvider.validateToken(jwt)) {
             Authentication authentication = jwtProvider.getAuthentication(jwt);
-            // SecurityContext에 인증 정보 저장 (이후 컨트롤러에서 @AuthenticationPrincipal로 사용 가능)
             SecurityContextHolder.getContext().setAuthentication(authentication);
         }
 

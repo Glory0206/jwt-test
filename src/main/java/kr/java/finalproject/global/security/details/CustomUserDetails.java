@@ -21,13 +21,11 @@ public class CustomUserDetails implements UserDetails {
         return authorities;
     }
 
-    // 소셜 로그인이라 password 사용 안 함
     @Override
     public String getPassword() {
         return null;
     }
 
-    // Spring Security 내부에서 사용하는 식별자
     @Override
     public String getUsername() {
         return String.valueOf(userId);

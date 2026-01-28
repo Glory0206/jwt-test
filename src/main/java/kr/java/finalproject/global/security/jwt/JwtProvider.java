@@ -92,7 +92,6 @@ public class JwtProvider {
         }
     }
 
-    // 6. 클레임 파싱
     private Claims parseClaims(String token) {
         try {
             return Jwts.parser()
