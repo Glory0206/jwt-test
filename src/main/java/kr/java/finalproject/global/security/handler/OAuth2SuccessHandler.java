@@ -4,7 +4,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import kr.java.finalproject.domain.auth.entity.RefreshToken;
 import kr.java.finalproject.domain.auth.repository.RefreshTokenRepository;
-import kr.java.finalproject.global.security.details.CustomUserDetails;
 import kr.java.finalproject.global.security.jwt.JwtProvider;
 import kr.java.finalproject.global.security.oauth.CustomOAuth2User;
 import lombok.RequiredArgsConstructor;
@@ -14,7 +13,6 @@ import org.springframework.http.ResponseCookie;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
-import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.IOException;
 
@@ -39,7 +37,7 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
 
         String refreshToken = jwtProvider.createRefreshToken(authentication, userId);
 
-        refreshTokenRepository.save(new RefreshToken(userId, refreshToken));
+        refreshTokenRepository.save(new RefreshToken(String.valueOf(userId), refreshToken));
 
         ResponseCookie cookie = ResponseCookie.from("refresh_token", refreshToken)
                 .httpOnly(true)
