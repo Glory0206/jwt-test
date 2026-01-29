@@ -27,7 +27,7 @@ public class AuthService {
         Long userId = extractUserId(authentication);
 
         // 3. Redis(또는 DB)에 저장된 해당 유저의 RefreshToken 가져오기
-        RefreshToken savedToken = refreshTokenRepository.findById(String.valueOf(userId))
+        RefreshToken savedToken = refreshTokenRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("Refresh token not found in storage"));
 
         // 4. 클라이언트가 보낸 토큰과 저장된 토큰이 일치하는지 대조 (보안 핵심)
