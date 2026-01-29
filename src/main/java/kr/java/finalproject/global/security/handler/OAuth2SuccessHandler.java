@@ -37,7 +37,6 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
 
         Long userId = principal.getUserId();
 
-        String accessToken = jwtProvider.createAccessToken(authentication, userId);
         String refreshToken = jwtProvider.createRefreshToken(authentication, userId);
 
         refreshTokenRepository.save(new RefreshToken(userId, refreshToken));
@@ -51,12 +50,8 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
                 .build();
         response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
 
-        String targetUrl = UriComponentsBuilder.fromUriString(frontendUrl + "/oauth/redirect")
-                .fragment("accessToken=" + accessToken)
-                .build().toUriString();
-
         clearAuthenticationAttributes(request);
 
-        getRedirectStrategy().sendRedirect(request, response, targetUrl);
+        getRedirectStrategy().sendRedirect(request, response, frontendUrl + "/oauth/redirect");
     }
 }
